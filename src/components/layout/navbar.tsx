@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { ModeToggle } from "./modeToggle";
 
 interface MenuItem {
   title: string;
@@ -101,6 +102,7 @@ const Navbar = ({
             </div>
           </div>
           <div className="flex gap-2">
+            <ModeToggle></ModeToggle>
             <Button asChild variant="outline" size="sm">
               <a href={auth.login.url}>{auth.login.title}</a>
             </Button>
