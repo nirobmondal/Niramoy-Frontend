@@ -18,19 +18,31 @@ import {
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-clinet";
 import { useForm } from "@tanstack/react-form";
-import { ArrowRight, Lock, Mail } from "lucide-react";
+import { ArrowRight, Lock, Mail, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as z from "zod";
-import { env } from "../../../env"
+import { env } from "../../../env";
 
 const formSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.email(),
   password: z.string().min(8, "Minimum length is 8"),
+  confirmPassword: z.string().min(8, "Please confirm your password"),
+}).superRefine(({ password, confirmPassword }, ctx) => {
+  if (password !== confirmPassword) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["confirmPassword"],
+      message: "Passwords do not match",
+    });
+  }
 });
 
-export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
+export function RegistrationForm({
+  ...props
+}: React.ComponentProps<typeof Card>) {
   const router = useRouter();
 
   const handleGoogleLogin = async () => {
@@ -44,26 +56,29 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
 
   const form = useForm({
     defaultValues: {
+      name: "",
       email: "",
       password: "",
+      confirmPassword: "",
     },
     validators: {
       onChange: formSchema,
       onSubmit: formSchema,
     },
     onSubmit: async ({ value }) => {
-      const toastId = toast.loading("Logging in...");
+      const toastId = toast.loading("Creating account...");
       try {
-        const { error } = await authClient.signIn.email(value);
+        const { confirmPassword, ...payload } = value;
+        const { error } = await authClient.signUp.email(payload);
 
         if (error) {
           toast.error(error.message, { id: toastId });
           return;
         }
 
-        toast.success("User Logged in Successfully", { id: toastId });
-        // redirect to home page.
-        router.push("/");
+        toast.success("User Created Successfully", { id: toastId });
+        // redirect to login page
+        router.push("/login");
       } catch (err) {
         toast.error("Something went wrong, please try again.", { id: toastId });
       }
@@ -76,14 +91,14 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
       className="border-0 bg-card/95 shadow-xl ring-1 ring-primary/10 backdrop-blur"
     >
       <CardHeader className="space-y-2">
-        <CardTitle className="text-2xl">Login to your account</CardTitle>
+        <CardTitle className="text-2xl">Create an account</CardTitle>
         <CardDescription>
-          Enter your credentials to continue to your dashboard.
+          Join now and start managing your experience in one place.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form
-          id="login-form"
+          id="registration-form"
           className="space-y-4"
           onSubmit={(e) => {
             e.preventDefault();
@@ -91,6 +106,35 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
           }}
         >
           <FieldGroup>
+            <form.Field
+              name="name"
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>Name</FieldLabel>
+                    <div className="relative">
+                      <User className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        className="h-10 pl-9"
+                        autoComplete="name"
+                        placeholder="Your full name"
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                      />
+                    </div>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
             <form.Field
               name="email"
               children={(field) => {
@@ -135,9 +179,38 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
                         id={field.name}
                         name={field.name}
                         value={field.state.value}
+                        placeholder="Create a password"
                         className="h-10 pl-9"
-                        autoComplete="current-password"
-                        placeholder="Enter your password"
+                        autoComplete="new-password"
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                      />
+                    </div>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+            <form.Field
+              name="confirmPassword"
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>Confirm password</FieldLabel>
+                    <div className="relative">
+                      <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        type="password"
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        placeholder="Re-enter your password"
+                        className="h-10 pl-9"
+                        autoComplete="new-password"
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
                       />
@@ -157,12 +230,12 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
           selector={(state) => [state.canSubmit, state.isSubmitting]}
           children={([canSubmit, isSubmitting]) => (
             <Button
-              form="login-form"
+              form="registration-form"
               type="submit"
               className="h-10 w-full bg-teal-700"
               disabled={!canSubmit || isSubmitting}
             >
-              {isSubmitting ? "Logging in..." : "Login"}
+              {isSubmitting ? "Creating account..." : "Register"}
               {!isSubmitting && <ArrowRight className="size-4" />}
             </Button>
           )}
@@ -176,12 +249,12 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
           Continue with Google
         </Button>
         <p className="text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
+          Already have an account?{" "}
           <Link
-            href="/register"
+            href="/login"
             className="font-medium underline underline-offset-4 hover:text-primary"
           >
-            Sign up
+            Sign in
           </Link>
         </p>
       </CardFooter>

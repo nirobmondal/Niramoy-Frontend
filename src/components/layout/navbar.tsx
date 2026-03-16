@@ -1,7 +1,6 @@
 "use client";
 
-import { Book, Menu, Sunset, Trees, Zap } from "lucide-react";
-import logoImage from "../../../public/assets/logoImage.svg";
+import { Menu } from "lucide-react";
 
 import {
   Accordion,
@@ -48,11 +47,11 @@ interface NavbarProps {
   };
   menu?: MenuItem[];
   auth?: {
-    login: {
+    Login: {
       title: string;
       url: string;
     };
-    signup: {
+    Register: {
       title: string;
       url: string;
     };
@@ -72,8 +71,8 @@ const Navbar = ({
       url: "/medicines",
     },
   ], auth = {
-    login: { title: "Login", url: "/login" },
-    signup: { title: "Sign up", url: "/register" },
+    Login: { title: "Login", url: "/login" },
+    Register: { title: "Register", url: "/register" },
   }, className,
 }: NavbarProps) => {
   return (
@@ -104,10 +103,10 @@ const Navbar = ({
           <div className="flex gap-2">
             <ModeToggle></ModeToggle>
             <Button asChild variant="outline" size="sm">
-              <a href={auth.login.url}>{auth.login.title}</a>
+              <a href={auth.Login.url}>{auth.Login.title}</a>
             </Button>
             <Button asChild size="sm">
-              <a href={auth.signup.url}>{auth.signup.title}</a>
+              <a href={auth.Register.url}>{auth.Register.title}</a>
             </Button>
           </div>
         </nav>
@@ -152,10 +151,10 @@ const Navbar = ({
 
                   <div className="flex flex-col gap-3">
                     <Button asChild variant="outline">
-                      <a href={auth.login.url}>{auth.login.title}</a>
+                      <a href={auth.Login.url}>{auth.Login.title}</a>
                     </Button>
                     <Button asChild>
-                      <a href={auth.signup.url}>{auth.signup.title}</a>
+                      <a href={auth.Register.url}>{auth.Register.title}</a>
                     </Button>
                   </div>
                 </div>
