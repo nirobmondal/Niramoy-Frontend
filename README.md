@@ -13,7 +13,7 @@ This frontend provides:
 
 ## Live Links
 
-- Frontend Live: `Pending deployment to Vercel`
+- Frontend Live: `https://niramoy-two.vercel.app/`
 - Backend Live: `https://niramoy-backend.onrender.com/`
 
 ## Key Features
