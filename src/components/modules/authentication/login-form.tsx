@@ -20,10 +20,10 @@ import { authClient } from "@/lib/auth-clinet";
 import { useForm } from "@tanstack/react-form";
 import { ArrowRight, Lock, Mail } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import * as z from "zod";
-import { env } from "../../../env"
+import { env } from "../../../env";
 
 const formSchema = z.object({
   email: z.email(),
@@ -32,14 +32,28 @@ const formSchema = z.object({
 
 export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const rawNextPath = searchParams.get("next");
+
+  function getSafeNextPath(rawNextPath: string | null) {
+    if (!rawNextPath) {
+      return null;
+    }
+
+    if (!rawNextPath.startsWith("/") || rawNextPath.startsWith("//")) {
+      return null;
+    }
+
+    return rawNextPath;
+  }
 
   const handleGoogleLogin = async () => {
-  toast.loading("Redirecting to Google...");
+    toast.loading("Redirecting to Google...");
 
-  await authClient.signIn.social({
-    provider: "google",
-    callbackURL: env.NEXT_PUBLIC_APP_URL,
-  });
+    await authClient.signIn.social({
+      provider: "google",
+      callbackURL: env.NEXT_PUBLIC_APP_URL,
+    });
   };
 
   const form = useForm({
@@ -48,7 +62,6 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
       password: "",
     },
     validators: {
-      onChange: formSchema,
       onSubmit: formSchema,
     },
     onSubmit: async ({ value }) => {
@@ -62,9 +75,10 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
         }
 
         toast.success("User Logged in Successfully", { id: toastId });
-        // redirect to home page.
-        router.push("/");
-      } catch (err) {
+        const nextPath = getSafeNextPath(rawNextPath);
+        router.push(nextPath ?? "/dashboard");
+        router.refresh();
+      } catch {
         toast.error("Something went wrong, please try again.", { id: toastId });
       }
     },
@@ -73,11 +87,13 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
   return (
     <Card
       {...props}
-      className="border-0 bg-card/95 shadow-xl ring-1 ring-primary/10 backdrop-blur"
+      className="border border-border rounded-none rounded-sm bg-card shadow-lg pt-10"
     >
-      <CardHeader className="space-y-2">
-        <CardTitle className="text-2xl">Login to your account</CardTitle>
-        <CardDescription>
+      <CardHeader className="space-y-2 pb-3">
+        <CardTitle className="text-3xl font-bold text-center">
+          Login to your account
+        </CardTitle>
+        <CardDescription className="text-lg text-center">
           Enter your credentials to continue to your dashboard.
         </CardDescription>
       </CardHeader>
@@ -91,9 +107,8 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
           }}
         >
           <FieldGroup>
-            <form.Field
-              name="email"
-              children={(field) => {
+            <form.Field name="email">
+              {(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
@@ -119,10 +134,9 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
                   </Field>
                 );
               }}
-            />
-            <form.Field
-              name="password"
-              children={(field) => {
+            </form.Field>
+            <form.Field name="password">
+              {(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
@@ -148,25 +162,26 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
                   </Field>
                 );
               }}
-            />
+            </form.Field>
           </FieldGroup>
         </form>
       </CardContent>
-      <CardFooter className="flex flex-col gap-3 justify-end bg-gradient-to-b from-transparent to-primary/5">
+      <CardFooter className="flex flex-col justify-end gap-3 border-t bg-muted/30">
         <form.Subscribe
           selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
+        >
+          {([canSubmit, isSubmitting]) => (
             <Button
               form="login-form"
               type="submit"
-              className="h-10 w-full bg-teal-700"
+              className="h-10 w-full bg-primary text-primary-foreground hover:opacity-95"
               disabled={!canSubmit || isSubmitting}
             >
               {isSubmitting ? "Logging in..." : "Login"}
               {!isSubmitting && <ArrowRight className="size-4" />}
             </Button>
           )}
-        />
+        </form.Subscribe>
         <Button
           onClick={() => handleGoogleLogin()}
           variant="outline"
@@ -178,7 +193,11 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
         <p className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
           <Link
-            href="/register"
+            href={
+              rawNextPath
+                ? `/register?next=${encodeURIComponent(rawNextPath)}`
+                : "/register"
+            }
             className="font-medium underline underline-offset-4 hover:text-primary"
           >
             Sign up

@@ -20,38 +20,42 @@ import { authClient } from "@/lib/auth-clinet";
 import { useForm } from "@tanstack/react-form";
 import { ArrowRight, Lock, Mail, User } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import * as z from "zod";
 import { env } from "../../../env";
 
-const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.email(),
-  password: z.string().min(8, "Minimum length is 8"),
-  confirmPassword: z.string().min(8, "Please confirm your password"),
-}).superRefine(({ password, confirmPassword }, ctx) => {
-  if (password !== confirmPassword) {
-    ctx.addIssue({
-      code: "custom",
-      path: ["confirmPassword"],
-      message: "Passwords do not match",
-    });
-  }
-});
+const formSchema = z
+  .object({
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.email(),
+    password: z.string().min(8, "Minimum length is 8"),
+    confirmPassword: z.string().min(8, "Please confirm your password"),
+  })
+  .superRefine(({ password, confirmPassword }, ctx) => {
+    if (password !== confirmPassword) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["confirmPassword"],
+        message: "Passwords do not match",
+      });
+    }
+  });
 
 export function RegistrationForm({
   ...props
 }: React.ComponentProps<typeof Card>) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const rawNextPath = searchParams.get("next");
 
   const handleGoogleLogin = async () => {
-  toast.loading("Redirecting to Google...");
+    toast.loading("Redirecting to Google...");
 
-  await authClient.signIn.social({
-    provider: "google",
-    callbackURL: env.NEXT_PUBLIC_APP_URL,
-  });
+    await authClient.signIn.social({
+      provider: "google",
+      callbackURL: env.NEXT_PUBLIC_APP_URL,
+    });
   };
 
   const form = useForm({
@@ -62,13 +66,16 @@ export function RegistrationForm({
       confirmPassword: "",
     },
     validators: {
-      onChange: formSchema,
       onSubmit: formSchema,
     },
     onSubmit: async ({ value }) => {
       const toastId = toast.loading("Creating account...");
       try {
-        const { confirmPassword, ...payload } = value;
+        const payload = {
+          name: value.name,
+          email: value.email,
+          password: value.password,
+        };
         const { error } = await authClient.signUp.email(payload);
 
         if (error) {
@@ -77,9 +84,12 @@ export function RegistrationForm({
         }
 
         toast.success("User Created Successfully", { id: toastId });
-        // redirect to login page
-        router.push("/login");
-      } catch (err) {
+        router.push(
+          rawNextPath
+            ? `/login?next=${encodeURIComponent(rawNextPath)}`
+            : "/login",
+        );
+      } catch {
         toast.error("Something went wrong, please try again.", { id: toastId });
       }
     },
@@ -88,11 +98,13 @@ export function RegistrationForm({
   return (
     <Card
       {...props}
-      className="border-0 bg-card/95 shadow-xl ring-1 ring-primary/10 backdrop-blur"
+      className="border border-border rounded-sm bg-card shadow-lg"
     >
       <CardHeader className="space-y-2">
-        <CardTitle className="text-2xl">Create an account</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-3xl font-bold text-center">
+          Create an account
+        </CardTitle>
+        <CardDescription className="text-lg text-center">
           Join now and start managing your experience in one place.
         </CardDescription>
       </CardHeader>
@@ -106,9 +118,8 @@ export function RegistrationForm({
           }}
         >
           <FieldGroup>
-            <form.Field
-              name="name"
-              children={(field) => {
+            <form.Field name="name">
+              {(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
@@ -134,10 +145,9 @@ export function RegistrationForm({
                   </Field>
                 );
               }}
-            />
-            <form.Field
-              name="email"
-              children={(field) => {
+            </form.Field>
+            <form.Field name="email">
+              {(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
@@ -163,10 +173,9 @@ export function RegistrationForm({
                   </Field>
                 );
               }}
-            />
-            <form.Field
-              name="password"
-              children={(field) => {
+            </form.Field>
+            <form.Field name="password">
+              {(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
@@ -192,15 +201,16 @@ export function RegistrationForm({
                   </Field>
                 );
               }}
-            />
-            <form.Field
-              name="confirmPassword"
-              children={(field) => {
+            </form.Field>
+            <form.Field name="confirmPassword">
+              {(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
                   <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Confirm password</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>
+                      Confirm password
+                    </FieldLabel>
                     <div className="relative">
                       <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
@@ -221,25 +231,26 @@ export function RegistrationForm({
                   </Field>
                 );
               }}
-            />
+            </form.Field>
           </FieldGroup>
         </form>
       </CardContent>
-      <CardFooter className="flex flex-col gap-3 justify-end bg-gradient-to-b from-transparent to-primary/5">
+      <CardFooter className="flex flex-col justify-end gap-3 border-t bg-muted/30">
         <form.Subscribe
           selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
+        >
+          {([canSubmit, isSubmitting]) => (
             <Button
               form="registration-form"
               type="submit"
-              className="h-10 w-full bg-teal-700"
+              className="h-10 w-full bg-primary text-primary-foreground hover:opacity-95"
               disabled={!canSubmit || isSubmitting}
             >
               {isSubmitting ? "Creating account..." : "Register"}
               {!isSubmitting && <ArrowRight className="size-4" />}
             </Button>
           )}
-        />
+        </form.Subscribe>
         <Button
           onClick={() => handleGoogleLogin()}
           variant="outline"
@@ -251,7 +262,11 @@ export function RegistrationForm({
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
           <Link
-            href="/login"
+            href={
+              rawNextPath
+                ? `/login?next=${encodeURIComponent(rawNextPath)}`
+                : "/login"
+            }
             className="font-medium underline underline-offset-4 hover:text-primary"
           >
             Sign in
