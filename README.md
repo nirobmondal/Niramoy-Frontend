@@ -86,29 +86,21 @@ cp .env.example .env
 Required variables:
 
 ```env
-NEXT_PUBLIC_API_URL=https://your-frontend-domain.com
-NEXT_PUBLIC_APP_URL=https://your-frontend-domain.com
-AUTH_URL=https://your-frontend-domain.com/api/auth
-BACKEND_URL=https://your-backend-domain.com
+NEXT_PUBLIC_API_URL=https://niramoy-backend.onrender.com
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+AUTH_URL=https://niramoy-backend.onrender.com/api/auth
 ```
 
 Notes:
 
-- `NEXT_PUBLIC_API_URL` should be the frontend origin for same-origin API/auth calls.
+- `NEXT_PUBLIC_API_URL` is the backend base URL. `/api` is handled in code.
 - `NEXT_PUBLIC_APP_URL` is the frontend URL used in auth callback flows.
-- `AUTH_URL` should use frontend domain and `/api/auth` path.
-- `BACKEND_URL` is used by Next.js rewrites to proxy `/api/*` to backend.
+- `AUTH_URL` points to backend Better Auth path.
 
 For Vercel production:
 
-- Set all four variables in **Project Settings -> Environment Variables**.
-- Set `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_APP_URL`, and `AUTH_URL` to your Vercel domain.
-- Set `BACKEND_URL` to `https://niramoy-backend.onrender.com`.
-
-Google OAuth redirect URI:
-
-- Local: `http://localhost:3000/api/auth/callback/google`
-- Production: `https://your-frontend-domain.com/api/auth/callback/google`
+- Set all three variables in **Project Settings -> Environment Variables**.
+- Set `NEXT_PUBLIC_APP_URL` to your Vercel domain (not localhost).
 
 ## Install, Run, Build
 
