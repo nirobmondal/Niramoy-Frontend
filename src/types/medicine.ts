@@ -1,51 +1,57 @@
-export type SortOption = "price_asc" | "price_desc" | "newest"
+export type SortOption = "price_asc" | "price_desc" | "newest";
 
 export type Category = {
-  id: string
-  name: string
-  description?: string | null
-}
+  id: string;
+  name: string;
+  description?: string | null;
+};
 
 export type SellerSummary = {
-  id: string
-  storeName?: string | null
-}
+  id: string;
+  storeName?: string | null;
+};
+
+export type ManufacturerOption = {
+  id: string;
+  name: string;
+};
 
 export type Medicine = {
-  id: string
-  name: string
-  description?: string | null
-  price: number
-  averageRating?: number | null
-  stock: number
-  manufacturer: string
-  imageUrl?: string | null
-  dosageForm?: string | null
-  strength?: string | null
-  isAvailable: boolean
-  category?: Category | null
-  seller?: SellerSummary | null
-}
+  id: string;
+  name: string;
+  description?: string | null;
+  price: number;
+  averageRating?: number | null;
+  stock: number;
+  manufacturerId: string;
+  manufacturer?: ManufacturerOption | null;
+  imageUrl?: string | null;
+  dosageForm?: string | null;
+  strength?: string | null;
+  isAvailable: boolean;
+  category?: Category | null;
+  seller?: SellerSummary | null;
+};
 
 export type MedicinesMeta = {
-  page: number
-  limit: number
-  total: number
-  totalPages: number
-}
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
 
 export type MedicinesListResponse = {
-  medicines: Medicine[]
-  meta: MedicinesMeta
-}
+  medicines: Medicine[];
+  meta: MedicinesMeta;
+};
 
 export type ShopQueryParams = {
-  page?: number
-  limit?: number
-  search?: string
-  category?: string
-  manufacturer?: string
-  minPrice?: number
-  maxPrice?: number
-  sort?: SortOption
-}
+  page?: number;
+  limit?: number;
+  search?: string;
+  category?: string;
+  manufacturerId?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  sort?: SortOption;
+};
