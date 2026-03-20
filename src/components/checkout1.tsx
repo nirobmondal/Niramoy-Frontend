@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Minus, Plus, Trash } from "lucide-react";
+import Image from "next/image";
 import { useCallback, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import {
@@ -237,7 +238,7 @@ const Checkout1 = ({ cartItems = CART_ITEMS, className }: Checkout1Props) => {
   });
 
   const onSubmit = (data: CheckoutFormType) => {
-    console.log(data);
+    // Submit logic will go here
   };
 
   const onContinue = (value: string) => {
@@ -652,9 +653,12 @@ const PaymentFields = () => {
                   <FieldContent className="flex-1">
                     <FieldTitle>Credit Card</FieldTitle>
                   </FieldContent>
-                  <img
+                  <Image
                     src="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/visa-icon.svg"
                     alt="Credit Card"
+                    width={20}
+                    height={20}
+                    unoptimized
                     className="size-5"
                   />
                   <RadioGroupItem
@@ -672,9 +676,12 @@ const PaymentFields = () => {
                   <FieldContent className="flex-1">
                     <FieldTitle>PayPal</FieldTitle>
                   </FieldContent>
-                  <img
+                  <Image
                     src="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/paypal-icon.svg"
                     alt="PayPal"
+                    width={20}
+                    height={20}
+                    unoptimized
                     className="size-5"
                   />
                   <RadioGroupItem
@@ -1021,9 +1028,12 @@ const CartItem = ({
       <div className="flex w-full gap-3.5 max-sm:flex-col">
         <div className="shrink-0 basis-25">
           <AspectRatio ratio={1} className="overflow-hidden rounded-lg">
-            <img
+            <Image
               src={image}
               alt={name}
+              width={400}
+              height={400}
+              unoptimized
               className="block size-full object-cover object-center"
             />
           </AspectRatio>

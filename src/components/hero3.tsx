@@ -1,4 +1,5 @@
 import { ArrowDownRight, Star } from "lucide-react";
+import Image from "next/image";
 
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -122,9 +123,12 @@ const Hero3 = ({
           </div>
         </div>
         <div className="flex">
-          <img
+          <Image
             src="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/placeholder-1.svg"
             alt="placeholder hero"
+            width={1200}
+            height={800}
+            unoptimized
             className="max-h-[600px] w-full rounded-md object-cover lg:max-h-[800px]"
           />
         </div>
